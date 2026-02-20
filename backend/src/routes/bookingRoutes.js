@@ -4,32 +4,38 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// CREATE A BOOKING //
+// CREATE
 router.post("/", protect, async (req, res) => {
-  try {
-    const { service, date, timeSlot } = req.body;
-
-    const booking = await Booking.create({
-      userId: req.user.id,
-      service,
-      date,
-      timeSlot
-    });
-
-    res.status(201).json({ msg: "Booking created", booking });
-  } catch (error) {
-    res.status(500).json({ msg: "Server error", error: error.message });
-  }
+  const booking = await Booking.create({
+    userId: req.user.id,
+    service: req.body.service,
+    date: req.body.date,
+    timeSlot: req.body.timeSlot,
+    price: req.body.price
+  });
+  res.status(201).json(booking);
 });
 
-// GET BOOKINGS FOR LOGGED IN USER //
+// READ
 router.get("/my", protect, async (req, res) => {
-  try {
-    const bookings = await Booking.find({ userId: req.user.id });
-    res.json(bookings);
-  } catch (error) {
-    res.status(500).json({ msg: "Server error", error: error.message });
-  }
+  const bookings = await Booking.find({ userId: req.user.id });
+  res.json(bookings);
+});
+
+// UPDATE
+router.put("/:id", protect, async (req, res) => {
+  const updated = await Booking.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(updated);
+});
+
+// DELETE
+router.delete("/:id", protect, async (req, res) => {
+  await Booking.findByIdAndDelete(req.params.id);
+  res.json({ msg: "Booking deleted" });
 });
 
 export default router;
